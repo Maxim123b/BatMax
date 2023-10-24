@@ -1,1 +1,2 @@
-# BatMax
+Creator - MaxZhukau 
+Code - C++
