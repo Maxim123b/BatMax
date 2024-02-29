@@ -1,0 +1,39 @@
+int S1 = 10;
+int S2 = 11;
+int S3 = 12;
+int S4 = 13;
+int analog = 26;
+int sens[11]{};
+void setup() {
+  // put your setup code here, to run once:
+  Serial.begin(9600);
+  pinMode(S1, OUTPUT);
+  pinMode(S2, OUTPUT);
+  pinMode(S3, OUTPUT);
+  pinMode(S4, OUTPUT);
+}
+
+void loop() {
+  readSens();
+  printSens();
+  delay(200);
+}
+
+void readSens() {
+  for (int i = 5; i <= 15; i++) {
+    digitalWrite(S1, i & 1);
+    digitalWrite(S2, (i >> 2) & 1);
+    digitalWrite(S3, (i >> 3) & 1);
+    digitalWrite(S4, (i >> 4) & 1);
+    delayMicroseconds(20);
+    sens[i - 5] = analogRead(analog);
+  }
+}
+
+void printSens() {
+  for (int i = 0; i <= 10; i++) {
+    Serial.print(sens[i]);
+    Serial.print(" ");
+  }
+  Serial.println();
+}
