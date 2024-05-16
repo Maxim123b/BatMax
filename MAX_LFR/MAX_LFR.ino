@@ -1,6 +1,3 @@
-#include <SoftwareSerial.h>
-
-
 #include <EEPROM.h>
 
 enum CMD { cmdSTART,
@@ -11,11 +8,10 @@ enum CMD { cmdSTART,
            cmdWAIT };
 byte currentCMD = cmdWAIT;
 
-
 ///////////////////////////////////////Pin Announcement
 const byte button = 12;
 const byte led = 11;
-const byte IR = 10;
+const byte IR = 0;
 const byte LMotorPwm = 5;
 const byte LMotor2 = 4;
 const byte LMotor1 = 7;
@@ -39,10 +35,13 @@ const char BT_TH_M = 'a';
 const char BT_noise_P = 'o';
 const char BT_noise_M = 'x';
 ////////////////////////////////
+const float RVIN = 10000.f;       
+const float RGND = 4700.f;       
+const float ADC_MAX = 1023.f;    
+const float ADC_REF_VOLTS = 5.f;  
+float kv = ADC_REF_VOLTS / ADC_MAX / (RGND / (RGND + RVIN));
+//////////////////////////////
 const byte Num_Sens = 8;
-
-
-
 int Sens[Num_Sens]{};
 int Pins[Num_Sens]{ A0, A1, A2, A3, A4, A5, A6, A7 };
 int bSpeed = 180;
@@ -435,4 +434,21 @@ void SaveVariables() {
   EEPROM.put(220, maxSpeed);
   EEPROM.put(230, thLine);
   EEPROM.put(240, noise);
+}
+
+float getVoltage() {
+
+  static int volts[10] = {};
+  static int sum = 0;
+  static int i = 0;
+  sum -= volts[i];
+  volts[i] = analogRead(BATTERY_PIN);
+  sum += volts[i];
+  i++;
+
+  if (i == 10) {
+    i = 0;
+  }
+
+  return kv * ((float)sum / 10);
 }
