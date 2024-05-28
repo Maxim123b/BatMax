@@ -10,14 +10,14 @@ byte currentCMD = cmdWAIT;
 
 ///////////////////////////////////////Pin Announcement
 const byte button = 12;
-const byte led = 11;
+const byte led = 3;
 const byte IR = 0;
-const byte LMotorPwm = 5;
+
 const byte LMotor2 = 4;
-const byte LMotor1 = 7;
-const byte RMotorPwm = 6;
-const byte RMotor2 = 9;
-const byte RMotor1 = 8;
+const byte LMotor1 = 5;
+
+const byte RMotor2 = 28;
+const byte RMotor1 = 29;
 //////////////////////////////////commands for bluetooth
 const char BT_STOP = 's';
 const char BT_MOVE = 'l';
@@ -41,20 +41,19 @@ const float ADC_MAX = 1023.f;
 const float ADC_REF_VOLTS = 5.f;  
 float kv = ADC_REF_VOLTS / ADC_MAX / (RGND / (RGND + RVIN));
 //////////////////////////////
-const byte Num_Sens = 8;
+const byte Num_Sens = 11;
 int Sens[Num_Sens]{};
-int Pins[Num_Sens]{ A0, A1, A2, A3, A4, A5, A6, A7 };
-int bSpeed = 180;
-float kp = 0.08;
-float kd = 0.9;
-int ws[8] = { 1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000 };
-int target = 4500;
+int bSpeed = 100;
+float kp = 0.03;
+float kd = 0.6;
+int ws[11] = { 1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000 ,9000,10000,11000};
+int target = 6000;
 int lastPos = target;
 int minSpeed = -30;
 int maxSpeed = 240;
 int minValue = 0;
-int maxValue = 9000;
-int thLine = 300;
+int maxValue = 12000;
+int thLine = 210;
 int noise = 100;
 int error;
 int lastError;
@@ -64,7 +63,11 @@ int minCalibr[8]{};
 int maxCalibr[8]{};
 const int ADR = 100;
 
-
+int S1 = 10;
+int S2 = 11;
+int S3 = 12;
+int S4 = 13;
+int analog = 26;
 
 void Drive(int left, int right);
 void LFR();
@@ -77,8 +80,6 @@ void LoadCalibr();
 void SaveCalibr();
 void LoadVariables();
 byte GetBTCode();
-SoftwareSerial BTSerial(3, 2);
-
 
 void setup() {
 
@@ -88,9 +89,13 @@ void setup() {
   pinMode(LMotor2, OUTPUT);
   pinMode(RMotor1, OUTPUT);
   pinMode(RMotor2, OUTPUT);
+  pinMode(S1, OUTPUT);
+  pinMode(S2, OUTPUT);
+  pinMode(S3, OUTPUT);
+  pinMode(S4, OUTPUT);
   Serial.begin(9600);
 
-  BTSerial.begin(9600);
+  Serial2.begin(9600);
   digitalWrite(led, HIGH);
   delay(200);
   digitalWrite(led, LOW);
@@ -126,37 +131,33 @@ void loop() {
       break;
     case cmdCALIBR:
       Serial.println("CALIBR");
-      Calibration();
+      //Calibration();
       break;
     case cmdWAIT:
       break;
   }
 }
 
+
 void Drive(int left, int right) {
   left = constrain(left, minSpeed, maxSpeed);
   right = constrain(right, minSpeed, maxSpeed);
-
   if (left >= 0) {
-    digitalWrite(LMotor1, 0);
-    digitalWrite(LMotor2, 1);
+    digitalWrite(LMotor1, HIGH);
+    analogWrite(LMotor2, 255 - left);
   } else {
-    digitalWrite(LMotor1, 1);
-    digitalWrite(LMotor2, 0);
+    digitalWrite(LMotor2, HIGH);
+    analogWrite(LMotor1, 255 + left);
   }
-
   if (right >= 0) {
-    digitalWrite(RMotor1, 0);
-    digitalWrite(RMotor2, 1);
-
+    digitalWrite(RMotor1, HIGH);
+    analogWrite(RMotor2, 255 - right);
   } else {
-    digitalWrite(RMotor1, 1);
-    digitalWrite(RMotor2, 0);
+    digitalWrite(RMotor2, HIGH);
+    analogWrite(RMotor1, 255 + right);
   }
-
-  analogWrite(LMotorPwm, abs(left));
-  analogWrite(RMotorPwm, abs(right));
 }
+
 
 int ReadLine() {
   long sumWV = 0;
@@ -170,7 +171,7 @@ int ReadLine() {
   ReadSens();
 
   for (int i = 0; i < Num_Sens; i++) {
-    Sens[i] = map(Sens[i], minCalibr[i], maxCalibr[i], 0, 1000);
+   // Sens[i] = map(Sens[i], minCalibr[i], maxCalibr[i], 0, 1000);
     if (Sens[i] < 0) {
       Sens[i] = 0;
     }
@@ -204,63 +205,64 @@ int ReadLine() {
 
 
 void ReadSens() {
-  for (int i = 0; i < Num_Sens; i++) {
-    Sens[i] = analogRead(Pins[i]);
-  }
-
-  for (int i = 0; i < Num_Sens; i++) {
-    Sens[i] = (Sens[i] + analogRead(Pins[i])) / 2;
+   for (int i = 5; i <= 15; i++) {
+    digitalWrite(S1, i & 1);
+    digitalWrite(S2, (i >> 1) & 1);
+    digitalWrite(S3, (i >> 2) & 1);
+    digitalWrite(S4, (i >> 3) & 1);
+    delayMicroseconds(20);
+    Sens[i - 5] = analogRead(analog);
   }
 }
 
 void PrintINFO() {
   for (int i = 0; i < Num_Sens; i++) {
-    BTSerial.print(minCalibr[i]);
-    BTSerial.print(' ');
+    Serial2.print(minCalibr[i]);
+    Serial2.print(' ');
   }
 
-  BTSerial.println(' ');
+  Serial2.println(' ');
   for (int i = 0; i < Num_Sens; i++) {
-    BTSerial.print(maxCalibr[i]);
-    BTSerial.print(' ');
+    Serial2.print(maxCalibr[i]);
+    Serial2.print(' ');
   }
 
   delay(300);
 }
 
 void PrintINFO2() {
-  BTSerial.print("kp=");
-  BTSerial.print(" ");
-  BTSerial.println(kp);
-  BTSerial.print("kd=");
-  BTSerial.print(" ");
-  BTSerial.println(kd);
-  BTSerial.print("noise=");
-  BTSerial.print(" ");
-  BTSerial.println(noise);
-  BTSerial.print("MAX_SPEED=");
-  BTSerial.print(" ");
-  BTSerial.println(maxSpeed);
-  BTSerial.print("MIN_SPEED=");
-  BTSerial.print(" ");
-  BTSerial.println(minSpeed);
-  BTSerial.print("bSpeed=");
-  BTSerial.print(" ");
-  BTSerial.println(bSpeed);
-  BTSerial.print("TH=");
-  BTSerial.print(" ");
-  BTSerial.println(thLine);
-  BTSerial.println("///////////////////////////////////////");
+  Serial2.print("kp=");
+  Serial2.print(" ");
+  Serial2.println(kp);
+  Serial2.print("kd=");
+  Serial2.print(" ");
+  Serial2.println(kd);
+  Serial2.print("noise=");
+  Serial2.print(" ");
+  Serial2.println(noise);
+  Serial2.print("MAX_SPEED=");
+  Serial2.print(" ");
+  Serial2.println(maxSpeed);
+  Serial2.print("MIN_SPEED=");
+  Serial2.print(" ");
+  Serial2.println(minSpeed);
+  Serial2.print("bSpeed=");
+  Serial2.print(" ");
+  Serial2.println(bSpeed);
+  Serial2.print("TH=");
+  Serial2.print(" ");
+  Serial2.println(thLine);
+  Serial2.println("///////////////////////////////////////");
   for (int i = 0; i < Num_Sens; i++) {
-    BTSerial.print(minCalibr[i]);
-    BTSerial.print(' ');
+    Serial2.print(minCalibr[i]);
+    Serial2.print(' ');
   }
-  BTSerial.println(' ');
+  Serial2.println(' ');
   for (int i = 0; i < Num_Sens; i++) {
-    BTSerial.print(maxCalibr[i]);
-    BTSerial.print(' ');
+    Serial2.print(maxCalibr[i]);
+    Serial2.print(' ');
   }
-  BTSerial.println(' ');
+  Serial2.println(' ');
 
 
   delay(300);
@@ -272,24 +274,24 @@ void PrintSens() {
   while (1) {
     for (int i = 0; i < Num_Sens; i++) {
       ReadSens();
-      BTSerial.print(Sens[i]);
-      BTSerial.print(' ');
+      Serial2.print(Sens[i]);
+      Serial2.print(' ');
     }
-    BTSerial.println();
-    BTSerial.print("position:");
-    BTSerial.println(ReadLine());
+    Serial2.println();
+    Serial2.print("position:");
+    Serial2.println(ReadLine());
     delay(400);
   }
 }
 
 void Save() {
-  BTSerial.println("save");
+  Serial2.println("save");
 }
 
 byte GetBTCode() {
   int retCmd = cmdWAIT;
-  if (BTSerial.available()) {
-    switch (BTSerial.read()) {
+  if (Serial2.available()) {
+    switch (Serial2.read()) {
       case BT_MOVE:
         retCmd = cmdSTART;
         break;
@@ -377,7 +379,7 @@ void Calibration() {
     }
   }
   Drive(0, 0);
-  SaveCalibr();
+  
 }
 
 void LFR() {
@@ -420,21 +422,7 @@ void LoadCalibr() {
     adr = adr + 4;
   }
 }
-void LoadVariables() {
-  EEPROM.get(200, bSpeed);
-  EEPROM.get(210, minSpeed);
-  EEPROM.get(220, maxSpeed);
-  EEPROM.get(230, thLine);
-  EEPROM.get(240, noise);
-}
 
-void SaveVariables() {
-  EEPROM.put(200, bSpeed);
-  EEPROM.put(210, minSpeed);
-  EEPROM.put(220, maxSpeed);
-  EEPROM.put(230, thLine);
-  EEPROM.put(240, noise);
-}
 
 float getVoltage() {
 
@@ -442,7 +430,7 @@ float getVoltage() {
   static int sum = 0;
   static int i = 0;
   sum -= volts[i];
-  volts[i] = analogRead(BATTERY_PIN);
+  volts[i] = analogRead(14);
   sum += volts[i];
   i++;
 
