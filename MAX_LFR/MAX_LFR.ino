@@ -1,5 +1,6 @@
 #include <EEPROM.h>
-
+#include <Servo.h>
+Servo s;
 enum CMD { cmdSTART,
            cmdSTOP,
            cmdREADSENS,
@@ -103,6 +104,11 @@ void setup() {
   // ADCSRA &= ~(1 << ADPS1);
   //t  ADCSRA |= (1 << ADPS0);
   LoadCalibr();
+  pinMode(2, OUTPUT);
+  s.attach(2);
+  pinMode(1, INPUT_PULLUP);
+  s.writeMicroseconds(2000);
+  s.writeMicroseconds(1000);
   // LoadVariables();
   
 }
