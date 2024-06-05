@@ -6,7 +6,10 @@ enum CMD { cmdSTART,
            cmdREADSENS,
            cmdINFO,
            cmdCALIBR,
-           cmdWAIT };
+           cmdWAIT,
+           cmdTurboOn,
+           cmdTurboOff
+            };
 byte currentCMD = cmdWAIT;
 
 ///////////////////////////////////////Pin Announcement
@@ -35,6 +38,10 @@ const char BT_TH_P = 'e';
 const char BT_TH_M = 'a';
 const char BT_noise_P = 'o';
 const char BT_noise_M = 'x';
+const char BT_TurboOn = 'y';
+const char BT_TurboOff = 'z';
+const char BT_TurboSpeedP = 'o';
+const char BT_TurboSpeedM = 'q';
 ////////////////////////////////
 const float RVIN = 10000.f;       
 const float RGND = 4700.f;       
@@ -43,10 +50,11 @@ const float ADC_REF_VOLTS = 5.f;
 float kv = ADC_REF_VOLTS / ADC_MAX / (RGND / (RGND + RVIN));
 //////////////////////////////
 const byte Num_Sens = 11;
+int TurboSpeed=1400;
 int Sens[Num_Sens]{};
-int bSpeed = 100;
-float kp = 0.03;
-float kd = 0.6;
+int bSpeed = 190;
+float kp = 0.09;
+float kd = 1;
 int ws[11] = { 1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000 ,9000,10000,11000};
 int target = 6000;
 int lastPos = target;
@@ -107,7 +115,7 @@ void setup() {
   pinMode(2, OUTPUT);
   s.attach(2);
   pinMode(1, INPUT_PULLUP);
-  s.writeMicroseconds(2000);
+ 
   s.writeMicroseconds(1000);
   // LoadVariables();
   
@@ -121,6 +129,7 @@ void loop() {
 
   switch (currentCMD) {
     case cmdSTART:
+     TurboOn();
       Serial.println("start");
       LFR();
       break;
@@ -138,6 +147,12 @@ void loop() {
     case cmdCALIBR:
       Serial.println("CALIBR");
       //Calibration();
+      break;
+      case cmdTurboOn:
+      TurboOn();
+      break;
+      case cmdTurboOff:
+      TurboOff();
       break;
     case cmdWAIT:
       break;
@@ -353,6 +368,18 @@ byte GetBTCode() {
         noise = noise - 10;
         //SaveVariables();
         break;
+        case BT_TurboOn:
+        retCmd=cmdTurboOn;
+        break;
+        case BT_TurboOff:
+        retCmd = cmdTurboOff;
+        break;
+        // case BT_TurboSpeedP:
+        // TurboSpeed += 100;
+        // break;
+        // case BT_TurboSpeedM:
+        //  TurboSpeed -= 100;
+        // break;
     }
   }
   return retCmd;
@@ -445,4 +472,14 @@ float getVoltage() {
   }
 
   return kv * ((float)sum / 10);
+}
+void TurboOn(){
+  for(int i = 1000; i < 1600;i++){
+  s.writeMicroseconds(i);
+  delay(10);
+  }
+  delay(1000);
+}
+void TurboOff(){
+  s.writeMicroseconds(1000);
 }
