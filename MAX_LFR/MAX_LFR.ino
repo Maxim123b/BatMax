@@ -40,7 +40,7 @@ const char BT_noise_P = 'o';
 const char BT_noise_M = 'x';
 const char BT_TurboOn = 'y';
 const char BT_TurboOff = 'z';
-const char BT_TurboSpeedP = 'o';
+const char BT_TurboSpeedP = 'g';
 const char BT_TurboSpeedM = 'q';
 ////////////////////////////////
 const float RVIN = 10000.f;       
@@ -50,26 +50,26 @@ const float ADC_REF_VOLTS = 5.f;
 float kv = ADC_REF_VOLTS / ADC_MAX / (RGND / (RGND + RVIN));
 //////////////////////////////
 const byte Num_Sens = 11;
-int TurboSpeed=1400;
+int TurboSpeed=1200;
 int Sens[Num_Sens]{};
-int bSpeed = 190;
-float kp = 0.09;
-float kd = 1;
+int bSpeed = 230;
+float kp = 0.07;
+float kd = 1.3;
 int ws[11] = { 1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000 ,9000,10000,11000};
 int target = 6000;
 int lastPos = target;
-int minSpeed = -30;
-int maxSpeed = 240;
+int minSpeed = -10;
+int maxSpeed = 250;
 int minValue = 0;
 int maxValue = 12000;
-int thLine = 210;
+int thLine = 200;
 int noise = 100;
 int error;
 int lastError;
 int delta;
 int deltaError;
-int minCalibr[8]{};
-int maxCalibr[8]{};
+int minCalibr[11]{};
+int maxCalibr[11]{};
 const int ADR = 100;
 
 int S1 = 10;
@@ -146,7 +146,7 @@ void loop() {
       break;
     case cmdCALIBR:
       Serial.println("CALIBR");
-      //Calibration();
+    //  Calibration();
       break;
       case cmdTurboOn:
       TurboOn();
@@ -192,7 +192,7 @@ int ReadLine() {
   ReadSens();
 
   for (int i = 0; i < Num_Sens; i++) {
-   // Sens[i] = map(Sens[i], minCalibr[i], maxCalibr[i], 0, 1000);
+    //Sens[i] = map(Sens[i], minCalibr[i], maxCalibr[i], 0, 1000);
     if (Sens[i] < 0) {
       Sens[i] = 0;
     }
@@ -252,28 +252,31 @@ void PrintINFO() {
 }
 
 void PrintINFO2() {
-  Serial2.print("kp=");
-  Serial2.print(" ");
+  Serial2.print("kp");
+  Serial2.print(" |");
   Serial2.println(kp);
-  Serial2.print("kd=");
-  Serial2.print(" ");
+  Serial2.print("kd");
+  Serial2.print(" |");
   Serial2.println(kd);
-  Serial2.print("noise=");
-  Serial2.print(" ");
+  Serial2.print("noise");
+  Serial2.print(" |");
   Serial2.println(noise);
-  Serial2.print("MAX_SPEED=");
-  Serial2.print(" ");
+  Serial2.print("MAX_SPEED");
+  Serial2.print(" |");
   Serial2.println(maxSpeed);
-  Serial2.print("MIN_SPEED=");
-  Serial2.print(" ");
+  Serial2.print("MIN_SPEED");
+  Serial2.print(" |");
   Serial2.println(minSpeed);
-  Serial2.print("bSpeed=");
-  Serial2.print(" ");
+  Serial2.print("bSpeed");
+  Serial2.print(" |");
   Serial2.println(bSpeed);
-  Serial2.print("TH=");
-  Serial2.print(" ");
+   Serial2.print("TurboSpeed");
+  Serial2.print(" |");
+  Serial2.println(TurboSpeed);
+  Serial2.print("TH");
+  Serial2.print(" |");
   Serial2.println(thLine);
-  Serial2.println("///////////////////////////////////////");
+  Serial2.println("___________________");
   for (int i = 0; i < Num_Sens; i++) {
     Serial2.print(minCalibr[i]);
     Serial2.print(' ');
@@ -374,12 +377,12 @@ byte GetBTCode() {
         case BT_TurboOff:
         retCmd = cmdTurboOff;
         break;
-        // case BT_TurboSpeedP:
-        // TurboSpeed += 100;
-        // break;
-        // case BT_TurboSpeedM:
-        //  TurboSpeed -= 100;
-        // break;
+        case BT_TurboSpeedP:
+        TurboSpeed += 100;
+        break;
+        case BT_TurboSpeedM:
+         TurboSpeed -= 100;
+        break;
     }
   }
   return retCmd;
@@ -474,7 +477,7 @@ float getVoltage() {
   return kv * ((float)sum / 10);
 }
 void TurboOn(){
-  for(int i = 1000; i < 1600;i++){
+  for(int i = 1000; i < TurboSpeed;i++){
   s.writeMicroseconds(i);
   delay(10);
   }
