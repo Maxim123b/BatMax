@@ -296,10 +296,11 @@ void PrintINFO2() {
 
 void PrintSens() {
   while (1) {
+    Serial2.print(" | ");
     for (int i = 0; i < Num_Sens; i++) {
       ReadSens();
       Serial2.print(Sens[i]);
-      Serial2.print(' ');
+      Serial2.print(" | ");
     }
     Serial2.println();
     Serial2.print("position:");
@@ -308,9 +309,6 @@ void PrintSens() {
   }
 }
 
-void Save() {
-  Serial2.println("save");
-}
 
 byte GetBTCode() {
   int retCmd = cmdWAIT;
@@ -333,43 +331,53 @@ byte GetBTCode() {
         break;
       case KP_P:
         kp = kp + 0.01;
-        //SaveVariables();
+        Serial2.print("kp ");
+         Serial2.println(kp);
         break;
       case KD_P:
+      Serial2.print("kd ");
         kd = kd + 0.10;
-        //SaveVariables();
+        Serial2.println(kd);
         break;
       case KP_M:
+      Serial2.print("kp ");
         kp = kp - 0.01;
-        //SaveVariables();
+         Serial2.println(kp);
         break;
       case KD_M:
+      Serial2.print("kd ");
         kd = kd - 0.10;
-        ///SaveVariables();
+         Serial2.println(kd);
         break;
       case B_M:
+      Serial2.print("Speed ");
         bSpeed = bSpeed - 10;
-        //SaveVariables();
+         Serial2.println(bSpeed);
         break;
       case B_P:
+      Serial2.print("Speed ");
         bSpeed = bSpeed + 10;
-        ///SaveVariables();
+         Serial2.println(bSpeed);
         break;
       case BT_TH_P:
+      Serial2.print("TH ");
         thLine = thLine + 10;
-        // SaveVariables();
+        Serial2.println(thLine);
         break;
       case BT_TH_M:
+      Serial2.print("TH ");
         thLine = thLine - 10;
-        // SaveVariables();
+         Serial2.println(thLine);
         break;
       case BT_noise_P:
+      Serial2.print("noise ");
         noise = noise + 10;
-        //SaveVariables();
+      Serial2.println(noise);
         break;
       case BT_noise_M:
+      Serial2.print("noise ");
         noise = noise - 10;
-        //SaveVariables();
+         Serial2.println(noise);
         break;
         case BT_TurboOn:
         retCmd=cmdTurboOn;
@@ -378,10 +386,14 @@ byte GetBTCode() {
         retCmd = cmdTurboOff;
         break;
         case BT_TurboSpeedP:
+        Serial2.print("TurboSpeed ");
         TurboSpeed += 100;
+         Serial2.println(TurboSpeed);
         break;
         case BT_TurboSpeedM:
+         Serial2.print("TurboSpeed ");
          TurboSpeed -= 100;
+          Serial2.println(TurboSpeed);
         break;
     }
   }
