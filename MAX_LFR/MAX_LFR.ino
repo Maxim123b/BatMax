@@ -129,8 +129,6 @@ void loop() {
 
   switch (currentCMD) {
     case cmdSTART:
-     TurboOn();
-      Serial.println("start");
       LFR();
       break;
     case cmdSTOP:
@@ -351,12 +349,12 @@ byte GetBTCode() {
         break;
       case B_M:
       Serial2.print("Speed ");
-        bSpeed = bSpeed - 10;
+        bSpeed = bSpeed - 5;
          Serial2.println(bSpeed);
         break;
       case B_P:
       Serial2.print("Speed ");
-        bSpeed = bSpeed + 10;
+        bSpeed = bSpeed + 5;
          Serial2.println(bSpeed);
         break;
       case BT_TH_P:
@@ -371,12 +369,12 @@ byte GetBTCode() {
         break;
       case BT_noise_P:
       Serial2.print("noise ");
-        noise = noise + 10;
+        noise = noise + 5;
       Serial2.println(noise);
         break;
       case BT_noise_M:
       Serial2.print("noise ");
-        noise = noise - 10;
+        noise = noise - 5;
          Serial2.println(noise);
         break;
         case BT_TurboOn:
@@ -387,12 +385,12 @@ byte GetBTCode() {
         break;
         case BT_TurboSpeedP:
         Serial2.print("TurboSpeed ");
-        TurboSpeed += 100;
+        TurboSpeed += 10;
          Serial2.println(TurboSpeed);
         break;
         case BT_TurboSpeedM:
          Serial2.print("TurboSpeed ");
-         TurboSpeed -= 100;
+         TurboSpeed -= 10;
           Serial2.println(TurboSpeed);
         break;
     }
