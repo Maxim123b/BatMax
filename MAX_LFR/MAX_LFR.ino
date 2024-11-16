@@ -50,16 +50,16 @@ const float ADC_REF_VOLTS = 5.f;
 float kv = ADC_REF_VOLTS / ADC_MAX / (RGND / (RGND + RVIN));
 //////////////////////////////
 const byte Num_Sens = 11;
-int TurboSpeed=1200;
+int TurboSpeed=1400;
 int Sens[Num_Sens]{};
-int bSpeed = 230;
+int bSpeed = 120;
 float kp = 0.07;
 float kd = 1.3;
 int ws[11] = { 1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000 ,9000,10000,11000};
 int target = 6000;
 int lastPos = target;
 int minSpeed = -10;
-int maxSpeed = 250;
+int maxSpeed = 150;
 int minValue = 0;
 int maxValue = 12000;
 int thLine = 200;
@@ -209,14 +209,17 @@ int ReadLine() {
   }
 
   if (onLine == false) {
-    if (lastPos < target) {
+    if (lastPos < 5000) {
       return minValue;
-    } else {
+    } else if(lastPos > 7000) {
       return maxValue;
+    }
+    else{
+    return target;
     }
   }
   //Dl,Constrain
-
+    
   lastPos = sumWV / sumW;
   return lastPos;
 }
