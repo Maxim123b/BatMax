@@ -111,7 +111,7 @@ void setup() {
   //ADCSRA |= (1 << ADPS2);
   // ADCSRA &= ~(1 << ADPS1);
   //t  ADCSRA |= (1 << ADPS0);
-  LoadCalibr();
+//  LoadCalibr();
   pinMode(2, OUTPUT);
   s.attach(2);
   pinMode(1, INPUT_PULLUP);
@@ -132,7 +132,7 @@ void loop() {
       LFR();
       break;
     case cmdSTOP:
-      Serial.println("stop");
+      //Serial.println("stop");
       Drive(0, 0);
       break;
     case cmdINFO:
@@ -143,7 +143,7 @@ void loop() {
       PrintSens();
       break;
     case cmdCALIBR:
-      Serial.println("CALIBR");
+     // Serial.println("CALIBR");
     //  Calibration();
       break;
       case cmdTurboOn:
@@ -498,4 +498,16 @@ void TurboOn(){
 }
 void TurboOff(){
   s.writeMicroseconds(1000);
+}
+
+void TestDrive(){
+    while(1){   
+                if (GetBTCode() == cmdSTOP) {
+
+      Drive(0, 0);
+      return;
+    }
+
+drive(50,50);
+    }
 }
