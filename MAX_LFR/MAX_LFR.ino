@@ -111,16 +111,13 @@ void setup() {
   digitalWrite(led, HIGH);
   delay(200);
   digitalWrite(led, LOW);
-  //ADCSRA |= (1 << ADPS2);
-  // ADCSRA &= ~(1 << ADPS1);
-  //t  ADCSRA |= (1 << ADPS0);
-//  LoadCalibr();
+ 
   pinMode(2, OUTPUT);
   s.attach(2);
   pinMode(1, INPUT_PULLUP);
  
   s.writeMicroseconds(1000);
-  // LoadVariables();
+ 
   
 }
 
@@ -135,19 +132,19 @@ void loop() {
       LFR();
       break;
     case cmdSTOP:
-      //Serial.println("stop");
+     
       Drive(0, 0);
       break;
     case cmdINFO:
       PrintINFO2();
       break;
     case cmdREADSENS:
-      /// Serial.println("READSENS");
+    
       PrintSens();
       break;
     case cmdCALIBR:
      // Serial.println("CALIBR");
-    //  Calibration();
+      Calibration();
       break;
       case cmdTurboOn:
       TurboOn();
