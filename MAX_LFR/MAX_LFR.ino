@@ -8,7 +8,8 @@ enum CMD { cmdSTART,
            cmdCALIBR,
            cmdWAIT,
            cmdTurboOn,
-           cmdTurboOff
+           cmdTurboOff,
+           cmdTestDrive
             };
 byte currentCMD = cmdWAIT;
 
@@ -42,6 +43,7 @@ const char BT_TurboOn = 'y';
 const char BT_TurboOff = 'z';
 const char BT_TurboSpeedP = 'g';
 const char BT_TurboSpeedM = 'q';
+const char BT_TestDrive = 't';
 ////////////////////////////////
 const float RVIN = 10000.f;       
 const float RGND = 4700.f;       
@@ -89,6 +91,7 @@ void LoadCalibr();
 void SaveCalibr();
 void LoadVariables();
 byte GetBTCode();
+void TestDrive();
 
 void setup() {
 
