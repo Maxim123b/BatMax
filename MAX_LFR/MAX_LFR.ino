@@ -290,7 +290,7 @@ void PrintINFO2() {
   Serial2.println(' ');
 
 
-  delay(300);
+  
 }
 
 
@@ -494,7 +494,7 @@ void TurboOn(){
   s.writeMicroseconds(i);
   delay(10);
   }
-  delay(1000);
+  
 }
 void TurboOff(){
   s.writeMicroseconds(1000);
