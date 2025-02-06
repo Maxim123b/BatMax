@@ -10,7 +10,7 @@ enum CMD { cmdSTART,
            cmdTurboOn,
            cmdTurboOff,
            cmdTestDrive
-            };
+};
 byte currentCMD = cmdWAIT;
 
 ///////////////////////////////////////Pin Announcement
@@ -45,27 +45,27 @@ const char BT_TurboSpeedP = 'g';
 const char BT_TurboSpeedM = 'q';
 const char BT_TestDrive = 't';
 ////////////////////////////////
-const float RVIN = 10000.f;       
-const float RGND = 4700.f;       
-const float ADC_MAX = 1023.f;    
-const float ADC_REF_VOLTS = 5.f;  
+const float RVIN = 10000.f;
+const float RGND = 4700.f;
+const float ADC_MAX = 1023.f;
+const float ADC_REF_VOLTS = 5.f;
 float kv = ADC_REF_VOLTS / ADC_MAX / (RGND / (RGND + RVIN));
 //////////////////////////////
 const byte Num_Sens = 11;
-int TurboSpeed=1400;
+int TurboSpeed = 1400;
 int Sens[Num_Sens]{};
-int bSpeed = 122;
-float kp = 0.06;
-float kd = 3.0;
-int ws[11] = { 1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000 ,9000,10000,11000};
+int bSpeed = 100;
+float kp = 0.04;
+float kd = 1.0;
+int ws[11] = { 1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000, 11000 };
 int target = 6000;
 int lastPos = target;
-int minSpeed = 0;
-int maxSpeed = 150;
+int minSpeed = -30;
+int maxSpeed = 180;
 int minValue = 0;
 int maxValue = 12000;
-int thLine = 457;
-int noise = 150;
+int thLine = 250;
+int noise = 110;
 int error;
 int lastError;
 int delta;
@@ -111,14 +111,12 @@ void setup() {
   digitalWrite(led, HIGH);
   delay(200);
   digitalWrite(led, LOW);
- 
+
   pinMode(2, OUTPUT);
   s.attach(2);
   pinMode(1, INPUT_PULLUP);
- 
+
   s.writeMicroseconds(1000);
- 
-  
 }
 
 void loop() {
@@ -132,24 +130,24 @@ void loop() {
       LFR();
       break;
     case cmdSTOP:
-     
+
       Drive(0, 0);
       break;
     case cmdINFO:
       PrintINFO2();
       break;
     case cmdREADSENS:
-    
+
       PrintSens();
       break;
     case cmdCALIBR:
-     // Serial.println("CALIBR");
+      // Serial.println("CALIBR");
       Calibration();
       break;
-      case cmdTurboOn:
+    case cmdTurboOn:
       TurboOn();
       break;
-      case cmdTurboOff:
+    case cmdTurboOff:
       TurboOff();
       break;
     case cmdWAIT:
@@ -209,17 +207,16 @@ int ReadLine() {
   }
 
   if (onLine == false) {
-    if (lastPos < 5000) {
+    if (lastPos < 5700) {
       return minValue;
-    } else if(lastPos > 7000) {
+    } else if (lastPos > 6300) {
       return maxValue;
-    }
-    else{
-    return target;
+    } else {
+      return target;
     }
   }
   //Dl,Constrain
-    
+
   lastPos = sumWV / sumW;
   return lastPos;
 }
@@ -227,13 +224,21 @@ int ReadLine() {
 
 
 void ReadSens() {
-   for (int i = 5; i <= 15; i++) {
+  for (int i = 5; i <= 15; i++) {
     digitalWrite(S1, i & 1);
     digitalWrite(S2, (i >> 1) & 1);
     digitalWrite(S3, (i >> 2) & 1);
     digitalWrite(S4, (i >> 3) & 1);
-    delayMicroseconds(20);
+    delayMicroseconds(10);
     Sens[i - 5] = analogRead(analog);
+  }
+  for (int i = 5; i <= 15; i++) {
+    digitalWrite(S1, i & 1);
+    digitalWrite(S2, (i >> 1) & 1);
+    digitalWrite(S3, (i >> 2) & 1);
+    digitalWrite(S4, (i >> 3) & 1);
+    delayMicroseconds(10);
+    Sens[i - 5] = (Sens[i - 5] + analogRead(analog))/2;
   }
 }
 
@@ -271,7 +276,7 @@ void PrintINFO2() {
   Serial2.print("bSpeed");
   Serial2.print(" |");
   Serial2.println(bSpeed);
-   Serial2.print("TurboSpeed");
+  Serial2.print("TurboSpeed");
   Serial2.print(" |");
   Serial2.println(TurboSpeed);
   Serial2.print("TH");
@@ -288,9 +293,6 @@ void PrintINFO2() {
     Serial2.print(' ');
   }
   Serial2.println(' ');
-
-
-  
 }
 
 
@@ -333,68 +335,68 @@ byte GetBTCode() {
       case KP_P:
         kp = kp + 0.01;
         Serial2.print("kp ");
-         Serial2.println(kp);
+        Serial2.println(kp);
         break;
       case KD_P:
-      Serial2.print("kd ");
+        Serial2.print("kd ");
         kd = kd + 0.10;
         Serial2.println(kd);
         break;
       case KP_M:
-      Serial2.print("kp ");
+        Serial2.print("kp ");
         kp = kp - 0.01;
-         Serial2.println(kp);
+        Serial2.println(kp);
         break;
       case KD_M:
-      Serial2.print("kd ");
+        Serial2.print("kd ");
         kd = kd - 0.10;
-         Serial2.println(kd);
+        Serial2.println(kd);
         break;
       case B_M:
-      Serial2.print("Speed ");
+        Serial2.print("Speed ");
         bSpeed = bSpeed - 5;
-         Serial2.println(bSpeed);
+        Serial2.println(bSpeed);
         break;
       case B_P:
-      Serial2.print("Speed ");
+        Serial2.print("Speed ");
         bSpeed = bSpeed + 5;
-         Serial2.println(bSpeed);
+        Serial2.println(bSpeed);
         break;
       case BT_TH_P:
-      Serial2.print("TH ");
+        Serial2.print("TH ");
         thLine = thLine + 10;
         Serial2.println(thLine);
         break;
       case BT_TH_M:
-      Serial2.print("TH ");
+        Serial2.print("TH ");
         thLine = thLine - 10;
-         Serial2.println(thLine);
+        Serial2.println(thLine);
         break;
       case BT_noise_P:
-      Serial2.print("noise ");
+        Serial2.print("noise ");
         noise = noise + 5;
-      Serial2.println(noise);
+        Serial2.println(noise);
         break;
       case BT_noise_M:
-      Serial2.print("noise ");
+        Serial2.print("noise ");
         noise = noise - 5;
-         Serial2.println(noise);
+        Serial2.println(noise);
         break;
-        case BT_TurboOn:
-        retCmd=cmdTurboOn;
+      case BT_TurboOn:
+        retCmd = cmdTurboOn;
         break;
-        case BT_TurboOff:
+      case BT_TurboOff:
         retCmd = cmdTurboOff;
         break;
-        case BT_TurboSpeedP:
+      case BT_TurboSpeedP:
         Serial2.print("TurboSpeed ");
         TurboSpeed += 10;
-         Serial2.println(TurboSpeed);
+        Serial2.println(TurboSpeed);
         break;
-        case BT_TurboSpeedM:
-         Serial2.print("TurboSpeed ");
-         TurboSpeed -= 10;
-          Serial2.println(TurboSpeed);
+      case BT_TurboSpeedM:
+        Serial2.print("TurboSpeed ");
+        TurboSpeed -= 10;
+        Serial2.println(TurboSpeed);
         break;
     }
   }
@@ -428,7 +430,6 @@ void Calibration() {
     }
   }
   Drive(0, 0);
-  
 }
 
 void LFR() {
@@ -489,25 +490,24 @@ float getVoltage() {
 
   return kv * ((float)sum / 10);
 }
-void TurboOn(){
-  for(int i = 1000; i < TurboSpeed;i++){
-  s.writeMicroseconds(i);
-  delay(10);
+void TurboOn() {
+  for (int i = 1000; i < TurboSpeed; i++) {
+    s.writeMicroseconds(i);
+    delay(10);
   }
-  
 }
-void TurboOff(){
+void TurboOff() {
   s.writeMicroseconds(1000);
 }
 
-void TestDrive(){
-    while(1){   
-                if (GetBTCode() == cmdSTOP) {
+void TestDrive() {
+  while (1) {
+    if (GetBTCode() == cmdSTOP) {
 
       Drive(0, 0);
       return;
     }
 
-drive(50,50);
-    }
+    Drive(50, 50);
+  }
 }
