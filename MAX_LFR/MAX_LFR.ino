@@ -152,6 +152,9 @@ void loop() {
       break;
     case cmdWAIT:
       break;
+      case cmdTestDrive:
+      TestDrive();
+      break;
   }
 }
 
@@ -188,7 +191,7 @@ int ReadLine() {
   ReadSens();
 
   for (int i = 0; i < Num_Sens; i++) {
-    //Sens[i] = map(Sens[i], minCalibr[i], maxCalibr[i], 0, 1000);
+    Sens[i] = map(Sens[i], minCalibr[i], maxCalibr[i], 0, 1000);
     if (Sens[i] < 0) {
       Sens[i] = 0;
     }
@@ -259,10 +262,10 @@ void PrintINFO() {
 
 void PrintINFO2() {
   Serial2.print("kp");
-  Serial2.print(" |");
+  Serial2.print("----");
   Serial2.println(kp);
   Serial2.print("kd");
-  Serial2.print(" |");
+  Serial2.print("----");
   Serial2.println(kd);
   Serial2.print("noise");
   Serial2.print(" |");
@@ -274,7 +277,7 @@ void PrintINFO2() {
   Serial2.print(" |");
   Serial2.println(minSpeed);
   Serial2.print("bSpeed");
-  Serial2.print(" |");
+  Serial2.print(" ----");
   Serial2.println(bSpeed);
   Serial2.print("TurboSpeed");
   Serial2.print(" |");
@@ -406,7 +409,7 @@ byte GetBTCode() {
 
 
 void Calibration() {
-  const int Loop = 4000;
+  const int Loop = 6000;
   for (int i = 0; i < Num_Sens; i++) {
     minCalibr[i] = 1023;
   }
